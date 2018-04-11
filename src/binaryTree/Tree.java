@@ -1,7 +1,5 @@
 package binaryTree;
 
-import java.util.*;
-
 /**
  * Created by Jian on 2018/4/10.
  */
@@ -46,7 +44,6 @@ public class Tree<K,V> {
      * @param right
      */
     public void pre(Tree<K,V> tree,Tree right){
-        List list = new ArrayList<K>();
         if (tree != null) {
             System.out.print(tree.key+",");
         }
@@ -59,20 +56,36 @@ public class Tree<K,V> {
     }
 
     /**
+     * 中序遍历
+     * @param tree
+     * @param right
+     */
+    public void mid(Tree<K,V> tree,Tree right){
+        if(tree.left != null){
+            mid(tree.left,tree.left.right);
+        }
+        if (tree != null) {
+            System.out.print(tree.key+",");
+        }
+        if (right != null){
+            mid(right,right.right);
+        }
+    }
+
+    /**
      * 后序遍历
      * @param tree
      * @param right
      */
     public void back(Tree<K,V> tree,Tree right){
-        List list = new ArrayList<K>();
-        if (tree != null) {
-            System.out.print(tree.key+",");
-        }
         if(tree.left != null){
             back(tree.left,tree.left.right);
         }
         if (right != null){
             back(right,right.right);
+        }
+        if (tree != null) {
+            System.out.print(tree.key+",");
         }
     }
 
@@ -86,6 +99,10 @@ public class Tree<K,V> {
         tree.add(30,null,tree);
         System.out.println("前序遍历：");
         tree.pre(tree,tree.right);
+        System.out.println("\n中序遍历：");
+        tree.mid(tree,tree.right);
+        System.out.println("\n后序遍历：");
+        tree.back(tree,tree.right);
     }
 
 }
