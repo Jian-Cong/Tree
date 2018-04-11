@@ -10,7 +10,7 @@ public class Tree<K,V> {
     private Tree<K,V> right;
     private int count;
 
-    Tree(){};
+    Tree(){}
 
     Tree (K key,V value,Tree<K,V> left, Tree<K,V> right){
         this.key = key;
