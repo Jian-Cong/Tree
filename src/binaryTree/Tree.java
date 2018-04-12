@@ -8,7 +8,7 @@ public class Tree<K,V> {
     private V value;
     private Tree<K,V> left;
     private Tree<K,V> right;
-    private int count = -1;
+    private int count;
 
     Tree (K key,V value,Tree<K,V> left, Tree<K,V> right){
         this.key = key;
@@ -31,7 +31,7 @@ public class Tree<K,V> {
         else if(compare(key,tree.key) > 0){
             tree.right = add(key,value,tree.right);
         }else{
-            tree.count ++;
+            this.count ++;
         }
         return tree;
     }
@@ -92,38 +92,47 @@ public class Tree<K,V> {
      * @param tree
      * @param del
      */
-    public void delete(Tree<K,V> tree,Tree<K,V> del){
+    public void delete(Tree<K,V> parent,Tree<K,V> tree,Tree<K,V> del){
         if(tree != null){
             if(compare(tree.key,del.key) > 0){
-                delete(tree.left,del);
+                delete(tree,tree.left,del);
             }
             if(compare(tree.key,del.key) < 0){
-                delete(tree.right,del);
+                delete(tree,tree.right,del);
             }
             if(compare(tree.key,del.key) == 0){
                 if(--tree.count == -1){
-                    // tree没有子节点
-                    if(tree.right == null){
-//                        tree
-                    }
-                    // ，tree有右子树，且没有tree.right.left为空
-                    if(tree.right == null || (tree.right != null && tree.right.left == null)){
-                        tree.key = tree.right.key;
-                        if(tree.right.left !=null){
-//                            tree.right = null;
-//                            tree.right.left
-                        }else{
-                            tree.right = tree.right.right;
+                    // tree左子树不为空右子树为空,
+                    if(tree.left != null && tree.right == null){
+                        // 循环找到最小的节点，删除该位置，每次遍历key值为左子树的key值
+                        while(tree.left != null && tree.left.left != null){
+                            tree.key = tree.left.key;
+                            tree = tree.left;
                         }
-                    }
-                    // tree有右子树，且没有tree.right.left不为空
-                    if(tree.right != null && tree.right.left != null){
-                        tree = tree.right.left;
-                    }
+                        tree.key = tree.left.key;
+                        tree.left = null;
+                    } else
+                        // tree有右子树
+                        if(tree.right != null){
+                            // 同左子树
+                            while(tree.right != null && tree.right.right != null){
+                                tree.key = tree.right.key;
+                                tree = tree.right;
+                            }
+                            tree.key = tree.right.key;
+                            tree.right = null;
+                        }else{
+                            if(tree == parent.left){
+                                parent.left = null;
+                            }else{
+                                parent.right = null;
+                            }
+                        }
                 }
             }
         }
     }
+
 
     public void printResult(Tree<K,V> tree){
         System.out.println("前序遍历：");
@@ -146,7 +155,7 @@ public class Tree<K,V> {
         tree.printResult(tree);
 
         System.out.println("\n开始删除节点");
-        tree.delete(tree,new Tree<>(20,null,null,null));
+        tree.delete(null,tree,new Tree<>(10,null,null,null));
         tree.printResult(tree);
     }
 
