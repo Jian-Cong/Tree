@@ -8,9 +8,7 @@ public class Tree<K,V> {
     private V value;
     private Tree<K,V> left;
     private Tree<K,V> right;
-    private int count;
-
-    Tree(){}
+    private int count = -1;
 
     Tree (K key,V value,Tree<K,V> left, Tree<K,V> right){
         this.key = key;
@@ -89,6 +87,53 @@ public class Tree<K,V> {
         }
     }
 
+    /**
+     * 删除节点
+     * @param tree
+     * @param del
+     */
+    public void delete(Tree<K,V> tree,Tree<K,V> del){
+        if(tree != null){
+            if(compare(tree.key,del.key) > 0){
+                delete(tree.left,del);
+            }
+            if(compare(tree.key,del.key) < 0){
+                delete(tree.right,del);
+            }
+            if(compare(tree.key,del.key) == 0){
+                if(--tree.count == -1){
+                    // tree没有子节点
+                    if(tree.right == null){
+//                        tree
+                    }
+                    // ，tree有右子树，且没有tree.right.left为空
+                    if(tree.right == null || (tree.right != null && tree.right.left == null)){
+                        tree.key = tree.right.key;
+                        if(tree.right.left !=null){
+//                            tree.right = null;
+//                            tree.right.left
+                        }else{
+                            tree.right = tree.right.right;
+                        }
+                    }
+                    // tree有右子树，且没有tree.right.left不为空
+                    if(tree.right != null && tree.right.left != null){
+                        tree = tree.right.left;
+                    }
+                }
+            }
+        }
+    }
+
+    public void printResult(Tree<K,V> tree){
+        System.out.println("前序遍历：");
+        tree.pre(tree,tree.right);
+        System.out.println("\n中序遍历：");
+        tree.mid(tree,tree.right);
+        System.out.println("\n后序遍历：");
+        tree.back(tree,tree.right);
+    }
+
     public static void main(String[] args){
         Tree<Integer,Integer> tree = new Tree<>(new Integer(20),null,null,null);
         tree.add(15,null,tree);
@@ -97,12 +142,12 @@ public class Tree<K,V> {
         tree.add(12,null,tree);
         tree.add(18,null,tree);
         tree.add(30,null,tree);
-        System.out.println("前序遍历：");
-        tree.pre(tree,tree.right);
-        System.out.println("\n中序遍历：");
-        tree.mid(tree,tree.right);
-        System.out.println("\n后序遍历：");
-        tree.back(tree,tree.right);
+
+        tree.printResult(tree);
+
+        System.out.println("\n开始删除节点");
+        tree.delete(tree,new Tree<>(20,null,null,null));
+        tree.printResult(tree);
     }
 
 }
