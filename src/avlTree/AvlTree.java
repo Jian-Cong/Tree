@@ -89,6 +89,7 @@ public class AvlTree<K,V> {
                 tree.left = add(key,tree.left);
                 // 判断是否失衡
                 if(getHeight(tree.left)-getHeight(tree.right) == 2){
+                    System.out.println("左左失衡节点是"+tree.key);
                     // 左左
                     if(compare(key,tree.left.key) < 0){
                         tree = tree.LLRotate(tree);
@@ -102,6 +103,7 @@ public class AvlTree<K,V> {
                 tree.right = add(key,tree.right);
                 // 判断是否失衡
                 if(getHeight(tree.right)-getHeight(tree.left) == 2) {
+                    System.out.println("右右失衡节点是"+tree.key);
                     if (compare(key, tree.right.key) > 0) {
                         tree = tree.RRRotate(tree);
                     } else if (compare(key, tree.right.key) < 0){
@@ -159,15 +161,100 @@ public class AvlTree<K,V> {
         tree.back(tree,tree.right);
     }
 
+    /**
+     * 删除
+     * @param key
+     * @param tree
+     * @return
+     */
+    public AvlTree<K,V> delete(K key,AvlTree<K,V> tree){
+        if(tree == null){
+            return null;
+        }
+        // 左子树
+        if(compare(key,tree.key) < 0){
+            tree.left = delete(key,tree.left);
+            // 判断是否失衡
+            if(getHeight(tree.left)-getHeight(tree.right) == 2){
+                // 左左
+                if(compare(key,tree.left.key) < 0){
+                    tree = tree.LLRotate(tree);
+                }else
+                    // 左右
+                    if(compare(key,tree.left.key) > 0){
+                        tree = tree.LRRotate(tree);
+                    }
+            }
+        }else if(compare(key,tree.key) > 0){
+            tree.right = delete(key,tree.right);
+            // 判断是否失衡
+            if(getHeight(tree.right) - getHeight(tree.left) == 2){
+                // 右右
+                if(compare(key,tree.right.key) > 0){
+                    tree = tree.RRRotate(tree);
+                }else
+                    // 右左
+                    if(compare(key,tree.right.key) < 0){
+                    tree = tree.RLRotate(tree);
+                }
+            }
+        }
+        // 相等
+        if(compare(key,tree.key) == 0){
+            // 有重复的节点，惰性删除
+            if(tree.count > 0){
+                this.count --;
+            }
+            else {
+                if(tree.left != null && tree.right != null){
+                    // 找到右子树的最小节点
+                    tree.key = findMin(tree.right).key;
+                    tree.right = delete(tree.key,tree);
+                }else{
+                    tree = tree.left != null?tree.left:tree.right;
+                    if(tree == null){
+                        return null;
+                    }
+                }
+            }
+        }
+        tree.height = Math.max(getHeight(tree.left),getHeight(tree.right))+1;
+        return tree;
+    }
+
+    /**
+     * 找到tree的子树中最小的
+     * @param tree
+     * @return
+     */
+    public AvlTree<K, V> findMin(AvlTree<K,V> tree) {
+        if(tree.left == null && tree.right == null)
+            return tree;
+        else{
+            tree = (tree.left != null && tree.right != null)?tree.left:tree.left;
+            tree = findMin(tree);
+        }
+        return tree;
+    }
+
     public static void main(String[] args){
-        AvlTree<Integer,Integer> tree = new AvlTree(10,null,null);
+        AvlTree<Integer,Integer> tree = new AvlTree(3,null,null);
 //        tree.add(10,tree);
-        tree = tree.add(6,tree);
-        tree = tree.add(11,tree);
-        tree =  tree.add(5,tree);
-        tree =  tree.add(7,tree);
-        tree = tree.add(8,tree);
+        tree = tree.add(1,tree);
+        tree = tree.add(2,tree);
+//        tree =  tree.add(4,tree);
+//        tree =  tree.add(7,tree);
+//        tree = tree.add(5,tree);
+//        tree = tree.add(34,tree);
+//        tree = tree.add(1,tree);tree = tree.add(3,tree);tree = tree.add(4,tree);
+//        tree = tree.add(7,tree);
+//        tree = tree.add(22,tree);
+
+
 
         tree.printResult(tree);
+//        System.out.println("\n删除节点:");
+//        tree = tree.delete(6,tree);
+//        tree.printResult(tree);
     }
 }
