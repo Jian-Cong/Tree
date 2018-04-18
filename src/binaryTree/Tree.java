@@ -10,6 +10,8 @@ public class Tree<K,V> {
     private Tree<K,V> right;
     private int count;
 
+   public Tree(){};
+
     Tree (K key,V value,Tree<K,V> left, Tree<K,V> right){
         this.key = key;
         this.value = value;
@@ -24,6 +26,8 @@ public class Tree<K,V> {
     public Tree add(K key,V value,Tree<K,V> tree){
         if(tree == null){
             tree = new Tree<K,V>(key,value,null,null);
+            tree.count = 0;
+            return tree;
         }
         if (compare(key,tree.key) < 0) {
             tree.left = add(key,value,tree.left);
@@ -31,7 +35,7 @@ public class Tree<K,V> {
         else if(compare(key,tree.key) > 0){
             tree.right = add(key,value,tree.right);
         }else{
-            this.count ++;
+            tree.count ++;
         }
         return tree;
     }
@@ -43,7 +47,7 @@ public class Tree<K,V> {
      */
     public void pre(Tree<K,V> tree,Tree right){
         if (tree != null) {
-            System.out.print(tree.key+",");
+            System.out.print(tree.key+"("+tree.count+"),");
         }
         if(tree.left != null){
             pre(tree.left,tree.left.right);
@@ -63,7 +67,7 @@ public class Tree<K,V> {
             mid(tree.left,tree.left.right);
         }
         if (tree != null) {
-            System.out.print(tree.key+",");
+            System.out.print(tree.key+"("+tree.count+"),");
         }
         if (right != null){
             mid(right,right.right);
@@ -83,12 +87,12 @@ public class Tree<K,V> {
             back(right,right.right);
         }
         if (tree != null) {
-            System.out.print(tree.key+",");
+            System.out.print(tree.key+"("+tree.count+"),");
         }
     }
 
     /**
-     * 删除节点
+     * 删除节点，废除不用
      * @param tree
      * @param del
      */
@@ -133,6 +137,54 @@ public class Tree<K,V> {
         }
     }
 
+    /**
+     * 删除节点
+     * @param tree
+     * @param key
+     * @return
+     */
+    public Tree<K,V> remove(Tree<K,V> tree,K key){
+        if(tree == null)
+            return null;
+        if(compare(key,tree.key) < 0){
+            tree.left = remove(tree.left,key);
+        }else if(compare(key,tree.key) > 0){
+            tree.right = remove(tree.right,key);
+        }else if(compare(key,tree.key) == 0){
+            if(--tree.count == -1) {
+                if (tree.left == null && tree.right == null) {
+                    return null;
+                } else
+                    // 左右子树都不为空，找到后继节点，赋值后继节点的key到啊当前节点的key，删除后继节点
+                    if (tree.left != null && tree.right != null) {
+                        K oldKey = tree.key;
+                        tree.key = findNext(tree.left).key;
+                        remove(tree, oldKey);
+                    } else
+                    // 只有一个子节点
+                    {
+                        tree = tree.left != null ? tree.left : tree.right;
+                        return tree;
+                    }
+            }
+        }
+        return tree;
+    }
+
+    /**
+     * 查找后继节点
+     * @param tree
+     */
+    public Tree<K,V> findNext(Tree<K,V> tree){
+        if(tree.left == null && tree.right == null){
+            return tree;
+        }else if(tree.left != null && tree.right != null){
+            return findNext(tree.left);
+        }else{
+            return findNext(tree.left!=null?tree.left:tree.right);
+        }
+    }
+
 
     public void printResult(Tree<K,V> tree){
         System.out.println("前序遍历：");
@@ -144,18 +196,20 @@ public class Tree<K,V> {
     }
 
     public static void main(String[] args){
-        Tree<Integer,Integer> tree = new Tree<>(new Integer(20),null,null,null);
+        Tree<Integer,Integer> tree = new Tree<Integer,Integer>(new Integer(20),null,null,null);
         tree.add(15,null,tree);
         tree.add(25,null,tree);
         tree.add(10,null,tree);
         tree.add(12,null,tree);
         tree.add(18,null,tree);
         tree.add(30,null,tree);
+//        tree.add(30,null,tree);
 
         tree.printResult(tree);
 
         System.out.println("\n开始删除节点");
-        tree.delete(null,tree,new Tree<>(10,null,null,null));
+//        tree.delete(null,tree,new Tree<Integer,Integer>(30,null,null,null));
+        tree = tree.remove(tree,30);
         tree.printResult(tree);
     }
 
