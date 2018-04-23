@@ -5,6 +5,7 @@ import com.sun.org.apache.regexp.internal.RE;
 public class RBTree {
     public static final String RED = "red";
     public static final String BLACK = "black";
+    public static RBTree root;
 
     private int key;
     private RBTree parent;
@@ -61,39 +62,26 @@ public class RBTree {
         tree.back(tree);
     }
 
-    public void add(int key,RBTree tree){
+    public void add(int key){
+        RBTree temp = root;
         RBTree parent = null;
-        while(tree != null){
-            parent = tree;
-            if(key < tree.key){
-                tree = tree.left;
+        while(temp != null){
+            parent = temp;
+            if(key < temp.key){
+                temp = temp.left;
             }else {
-                tree = tree.right;
+                temp = temp.right;
             }
         }
-        tree = new RBTree(key,null,null);
-        tree.parent = parent;
+        RBTree newTree = new RBTree(key,null,null);
+//        newTree.color = RED;
+        newTree.parent = parent;
         if(key < parent.key){
-            parent.left = tree;
+            parent.left = newTree;
         }else {
-            parent.right = tree;
+            parent.right = newTree;
         }
-
-        /*
-        if(tree == null){
-            tree = new RBTree(key,null,null);
-        }else{
-            if(key < tree.key){
-                tree.left = add(key,tree.left);
-                tree.left.parent = tree;
-                tree = addFix(tree);
-            }else{
-                tree.right = add(key,tree.right);
-                tree.right.parent = tree;
-                tree = addFix(tree);
-            }
-        }
-        return tree;*/
+        addFix(newTree);
     }
 
     /**
@@ -149,68 +137,82 @@ public class RBTree {
         return top;
     }
 
-    public RBTree addFix(RBTree tree){
-        if(tree.parent == null)
-            tree.color = BLACK;
-        else {
-            RBTree parent = tree.parent;
-            RBTree grandP = parent.parent;
-            RBTree uncle = null;
-            if(grandP != null){
+    /**
+     * tree 是新添加的节点，不是整个树
+     * @param tree
+     */
+    public void addFix(RBTree tree) {
+        RBTree parent,grandP,uncle = null;
+
+        while((parent= tree.parent) != null && RED.equals(parent.color)) {
+            grandP = parent.parent;
+            if (grandP != null) {
                 // parent是祖父的左孩子
-                if(parent.key == grandP.left.key){
+                if (parent.key < grandP.key) {
                     uncle = grandP.right;
-                    if(RED.equals(parent.color)){
-                        if(RED.equals(uncle.color)){
+                    if (RED.equals(parent.color)) {
+                        if (uncle != null && RED.equals(uncle.color)) {
                             parent.color = BLACK;
                             uncle.color = BLACK;
                             grandP.color = RED;
-                            addFix(grandP);
-                        }else
-                            // 左孩子，叔叔黑色
-                            if(tree.key < parent.key){
-                            parent.color = BLACK;
-                            grandP.color = RED;
-                            grandP = rightRotate(grandP);
-                        }else
+                            tree = grandP;
+                        } else
                             // 右孩子 叔叔黑色
-                            {
-                                addFix(parent);
+                            if (tree.key > parent.key) {
+                                RBTree temp = null;
                                 parent = leftRrotate(parent);
+                                temp = tree;
+                                tree = parent;
+                                parent = temp;
+                            }else {
+                                // 左孩子，叔叔黑色
+                                parent.color = BLACK;
+                                grandP.color = RED;
+                                rightRotate(grandP);
                             }
                     }
-                }else if(parent.key == grandP.right.key){
+                } else if (parent.key > grandP.key) {
                     uncle = grandP.left;
-                }
-
-                uncle = (grandP.left != null && grandP.left.key == tree.key)?grandP.right:tree.left;
-                if(uncle != null){
-                    // 叔叔节点是红的
-                    if(RED.equals(uncle.color)){
-                        tree.parent.color = BLACK;
-                        uncle.color = BLACK;
-                        grandP.color = RED;
-                        addFix(grandP);
-                    }else if(tree.key< tree.parent.key){
-                        tree.parent.color = BLACK;
-                        grandP.color = RED;
-                        // 右旋
-                       tree = rightRotate(grandP);
-                    }else if(tree.key > tree.parent.key){
-                        tree = leftRrotate(tree.parent);
+                    if(RED.equals(parent.color)){
+                        if(uncle != null && RED.equals(uncle.color)){
+                            parent.color = BLACK;
+                            uncle.color = BLACK;
+                            grandP.color = RED;
+                            tree = grandP;
+                        }else
+                            // 左子树
+                        if(tree.key < parent.key){
+                            leftRrotate(parent);
+                            RBTree temp = null;
+                            temp = tree;
+                            tree = parent;
+                            parent = temp;
+                        }else {
+                            parent.color = BLACK;
+                            grandP.color = RED;
+                            leftRrotate(grandP);
+                        }
                     }
                 }
+            }else{
+                tree = parent;
             }
         }
-        return tree;
+        if(parent == null){
+            root = tree;
+            root.color = BLACK;
+        }
+
     }
 
     public static void main(String[] args){
-        RBTree tree = new RBTree(3,null,null);
-        tree.add(2,tree);
-        tree.add(4,tree);
-        tree.add(1,tree);
-        tree.print(tree);
+        root = new RBTree(3,null,null);
+        root.color = BLACK;
+//        RBTree tree = root;
+        root.add(4);
+        root.add(5);
+        root.add(1);
+        root.print(root);
 
     }
 }
