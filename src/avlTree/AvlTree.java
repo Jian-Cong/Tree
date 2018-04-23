@@ -238,14 +238,14 @@ public class AvlTree<K,V> {
     }
 
     public static void main(String[] args){
-        AvlTree<Integer,Integer> tree = new AvlTree(3,null,null);
+        AvlTree<Integer,Integer> tree = new AvlTree(10,null,null);
 //        tree.add(10,tree);
-        tree = tree.add(1,tree);
-        tree = tree.add(2,tree);
-//        tree =  tree.add(4,tree);
-//        tree =  tree.add(7,tree);
-//        tree = tree.add(5,tree);
-//        tree = tree.add(34,tree);
+        tree = tree.add(5,tree);
+        tree = tree.add(15,tree);
+        tree =  tree.add(2,tree);
+        tree =  tree.add(3,tree);
+//        tree = tree.add(3,tree);
+//        tree = tree.add(6,tree);
 //        tree = tree.add(1,tree);tree = tree.add(3,tree);tree = tree.add(4,tree);
 //        tree = tree.add(7,tree);
 //        tree = tree.add(22,tree);
