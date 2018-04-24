@@ -224,6 +224,83 @@ public class RBTree {
 
     }
 
+
+    public void remove(int key){
+        RBTree parent = null;
+        RBTree tree = root;
+        while(tree != null){
+            if(key < tree.key){
+                tree = tree.left;
+            }else if(key > tree.key){
+                tree = tree.right;
+            }else {
+                parent = tree.parent;
+                // 被删除节点tree是叶子节点
+                if(tree.left == null && tree.right == null){
+                    if(tree.key < parent.key){
+                        parent.left = null;
+                    }else{
+                        parent.right = null;
+                    }
+                }else
+                // 被删除节点tree左子树为空
+                if(tree.left == null){
+                    if(tree.key < parent.key) {
+                        parent.left = tree.right;
+                    }else{
+                        parent.right = tree.right;
+                    }
+                    tree.right.parent = parent;
+                }else
+                    // 被删除节点tree右子树为空
+                    if (tree.right == null){
+                    if(tree.key < parent.key){
+                        parent.left = tree.left;
+                    }else {
+                        parent.right = tree.left;
+                    }
+                    tree.left.parent = parent;
+                }else
+                    // 左右子树都不为空，找到后继节点并删除
+                    {
+                        Integer tempKey = findNext(tree.right);
+                        if(tempKey != null){
+                            remove(tempKey);
+                            tree.key = tempKey;
+                        }
+                }
+            }
+        }
+
+    }
+
+    /**
+     * 查找后继节点
+     * @param tree
+     * @return
+     */
+    public Integer findNext(RBTree tree){
+        if(tree.key == root.key && tree.right != null){
+            tree = tree.right;
+        }else if(tree.right == null){
+            return null;
+        }
+        // 左子树
+        if(tree.key < tree.parent.key){
+
+        }else{
+            while(tree != null){
+                if(tree.left != null && tree.right != null){
+                    tree = tree.right;
+                }else if(tree.right == null){
+                    tree = tree.left;
+                }else{
+                    break;
+                }
+            }
+        }
+        return tree.key;
+    }
     public static void main(String[] args){
         root = new RBTree(80,null,null);
         root.color = BLACK;
@@ -238,6 +315,7 @@ public class RBTree {
         root.add(35);
         root.add(36);
         root.print(root);
+        System.out.println("\n "+root.key+"后继节点："+root.findNext(root.right));
 
     }
 }
