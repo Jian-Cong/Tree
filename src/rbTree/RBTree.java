@@ -2,6 +2,11 @@ package src.rbTree;
 
 import com.sun.org.apache.regexp.internal.RE;
 
+/**
+ * 根节点单独定义，旋转的时候判断根节点有没有改变
+ *
+ * 添加节点进行的旋转并没有新的节点替换当前节点
+ */
 public class RBTree {
     public static final String RED = "red";
     public static final String BLACK = "black";
@@ -74,7 +79,6 @@ public class RBTree {
             }
         }
         RBTree newTree = new RBTree(key,null,null);
-//        newTree.color = RED;
         newTree.parent = parent;
         if(key < parent.key){
             parent.left = newTree;
@@ -106,6 +110,10 @@ public class RBTree {
             }else if(tree.key == tree.parent.right.key){
                 tree.parent.right = top;
             }
+        }else{
+            // tree的 父节点为空，表示tree是根节点；旋转后top节点作为根节点
+            root = top;
+            root.color = BLACK;
         }
         // 旧顶点成为新顶点的左孩子
         top.left = tree;
@@ -131,6 +139,10 @@ public class RBTree {
             }else if(tree.key == tree.parent.right.key){
                 tree.parent.right = top;
             }
+        }else{
+            // tree的 父节点为空，表示tree是根节点；旋转后top节点作为根节点
+            root = top;
+            root.color = BLACK;
         }
         top.right = tree;
         tree.parent = top;
@@ -151,16 +163,20 @@ public class RBTree {
                 if (parent.key < grandP.key) {
                     uncle = grandP.right;
                     if (RED.equals(parent.color)) {
+                        // 叔叔节点存在且是红色
                         if (uncle != null && RED.equals(uncle.color)) {
                             parent.color = BLACK;
                             uncle.color = BLACK;
                             grandP.color = RED;
+                            RBTree temp = null;
+                            temp = tree;
                             tree = grandP;
+                            grandP = temp;
                         } else
                             // 右孩子 叔叔黑色
                             if (tree.key > parent.key) {
                                 RBTree temp = null;
-                                parent = leftRrotate(parent);
+                                leftRrotate(parent);
                                 temp = tree;
                                 tree = parent;
                                 parent = temp;
@@ -178,11 +194,14 @@ public class RBTree {
                             parent.color = BLACK;
                             uncle.color = BLACK;
                             grandP.color = RED;
+                            RBTree temp = null;
+                            temp = tree;
                             tree = grandP;
+                            grandP = temp;
                         }else
                             // 左子树
                         if(tree.key < parent.key){
-                            leftRrotate(parent);
+                            rightRotate(parent);
                             RBTree temp = null;
                             temp = tree;
                             tree = parent;
@@ -194,9 +213,9 @@ public class RBTree {
                         }
                     }
                 }
-            }else{
+            }/*else{
                 tree = parent;
-            }
+            }*/
         }
         if(parent == null){
             root = tree;
@@ -206,12 +225,18 @@ public class RBTree {
     }
 
     public static void main(String[] args){
-        root = new RBTree(3,null,null);
+        root = new RBTree(80,null,null);
         root.color = BLACK;
 //        RBTree tree = root;
-        root.add(4);
-        root.add(5);
-        root.add(1);
+        root.add(60);
+        root.add(120);
+        root.add(40);
+        root.add(70);
+        root.add(140);
+        root.add(20);
+        root.add(50);
+        root.add(35);
+        root.add(36);
         root.print(root);
 
     }
