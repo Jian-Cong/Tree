@@ -11,8 +11,9 @@ public class RBTree {
     public static final String RED = "red";
     public static final String BLACK = "black";
     public static RBTree root;
+    public static RBTree leaf = new RBTree(null,null,null);
 
-    private int key;
+    private Integer key;
     private RBTree parent;
     private RBTree left;
     private RBTree right;
@@ -20,7 +21,7 @@ public class RBTree {
 
     public RBTree() {}
 
-    public RBTree (int key, RBTree left, RBTree right){
+    public RBTree (Integer key, RBTree left, RBTree right){
         this.key = key;
         this.left = left;
         this.right = right;
@@ -228,6 +229,10 @@ public class RBTree {
     public void remove(int key){
         RBTree parent = null;
         RBTree tree = root;
+        // 实际删除的节点
+        RBTree deleteNode = null;
+        // deleteNode的子节点
+        RBTree deleteChiled = null;
         while(tree != null){
             if(key < tree.key){
                 tree = tree.left;
@@ -235,6 +240,7 @@ public class RBTree {
                 tree = tree.right;
             }else {
                 parent = tree.parent;
+                deleteNode = tree;
                 // 被删除节点tree是叶子节点
                 if(tree.left == null && tree.right == null){
                     if(tree.key < parent.key){
@@ -242,6 +248,7 @@ public class RBTree {
                     }else{
                         parent.right = null;
                     }
+                    deleteChiled = leaf;
                 }else
                 // 被删除节点tree左子树为空
                 if(tree.left == null){
@@ -251,56 +258,84 @@ public class RBTree {
                         parent.right = tree.right;
                     }
                     tree.right.parent = parent;
+
+                    deleteChiled = tree.right;
                 }else
-                    // 被删除节点tree右子树为空
-                    if (tree.right == null){
+                // 被删除节点tree右子树为空
+                 if (tree.right == null){
                     if(tree.key < parent.key){
                         parent.left = tree.left;
                     }else {
                         parent.right = tree.left;
                     }
                     tree.left.parent = parent;
+
+                     deleteChiled = tree.left;
                 }else
                     // 左右子树都不为空，找到后继节点并删除
                     {
-                        Integer tempKey = findNext(tree.right);
-                        if(tempKey != null){
-                            remove(tempKey);
-                            tree.key = tempKey;
+                        RBTree nextTree = findNext(tree);
+                        deleteNode = nextTree;
+                        if(nextTree != null){
+                            tree.key = nextTree.key;
+                            nextTree.parent.left = nextTree.right;
+                            if(nextTree.left != null){
+                                deleteChiled = nextTree.left;
+                            }else{
+                                deleteChiled = nextTree.right;
+                            }
+                            break;
                         }
                 }
             }
         }
 
+        // 删除的节点是黑色节点，修复红黑树
+        if(deleteNode != null && BLACK.equals(deleteNode.color)){
+            System.out.println("删除的节点颜色是黑色");
+        }
     }
 
     /**
-     * 查找后继节点
+     * 查找tree节点的后继节点
      * @param tree
      * @return
      */
-    public Integer findNext(RBTree tree){
-        if(tree.key == root.key && tree.right != null){
+    public RBTree findNext(RBTree tree){
+        if(tree.key == root.key && root.right != null || tree.right != null){
             tree = tree.right;
-        }else if(tree.right == null){
-            return null;
         }
         // 左子树
         if(tree.key < tree.parent.key){
-
+            while(tree.left  != null) {
+               tree = tree.left;
+            }
         }else{
-            while(tree != null){
-                if(tree.left != null && tree.right != null){
-                    tree = tree.right;
-                }else if(tree.right == null){
-                    tree = tree.left;
-                }else{
-                    break;
-                }
+            while(tree.left != null){
+               tree = tree.left;
             }
         }
-        return tree.key;
+        return tree;
     }
+
+    /**
+     *根据key值查找节点的后继节点
+     * @param key
+     */
+    public void next(int key){
+        RBTree tree = root;
+        while(tree != null && key != tree.key) {
+            if (key < tree.key) {
+                tree = tree.left;
+            }else if(key > tree.key){
+                tree = tree.right;
+            }else{
+                break;
+            }
+        }
+        System.out.println("\n "+findNext(tree).key);
+    }
+
     public static void main(String[] args){
         root = new RBTree(80,null,null);
         root.color = BLACK;
@@ -314,8 +349,14 @@ public class RBTree {
         root.add(50);
         root.add(35);
         root.add(36);
+        root.add(45);
+        root.add(51);
         root.print(root);
-        System.out.println("\n "+root.key+"后继节点："+root.findNext(root.right));
+
+        System.out.println("\n 删除节点:");
+        root.remove(40);
+        root.print(root);
+
 
     }
 }
