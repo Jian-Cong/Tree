@@ -11,7 +11,8 @@ public class RBTree {
     public static final String RED = "red";
     public static final String BLACK = "black";
     public static RBTree root;
-    public static RBTree leaf = new RBTree(null,null,null);
+    public static RBTree leaf = new RBTree(BLACK);
+
 
     private Integer key;
     private RBTree parent;
@@ -19,7 +20,7 @@ public class RBTree {
     private RBTree right;
     private String color = RED;
 
-    public RBTree() {}
+    public RBTree(String color) {}
 
     public RBTree (Integer key, RBTree left, RBTree right){
         this.key = key;
@@ -232,7 +233,7 @@ public class RBTree {
         // 实际删除的节点
         RBTree deleteNode = null;
         // deleteNode的子节点
-        RBTree deleteChiled = null;
+        RBTree deleteChild = null;
         while(tree != null){
             if(key < tree.key){
                 tree = tree.left;
@@ -248,7 +249,7 @@ public class RBTree {
                     }else{
                         parent.right = null;
                     }
-                    deleteChiled = leaf;
+                    deleteChild = leaf;
                 }else
                 // 被删除节点tree左子树为空
                 if(tree.left == null){
@@ -259,7 +260,7 @@ public class RBTree {
                     }
                     tree.right.parent = parent;
 
-                    deleteChiled = tree.right;
+                    deleteChild = tree.right;
                 }else
                 // 被删除节点tree右子树为空
                  if (tree.right == null){
@@ -270,7 +271,7 @@ public class RBTree {
                     }
                     tree.left.parent = parent;
 
-                     deleteChiled = tree.left;
+                     deleteChild = tree.left;
                 }else
                     // 左右子树都不为空，找到后继节点并删除
                     {
@@ -278,11 +279,16 @@ public class RBTree {
                         deleteNode = nextTree;
                         if(nextTree != null){
                             tree.key = nextTree.key;
-                            nextTree.parent.left = nextTree.right;
-                            if(nextTree.left != null){
-                                deleteChiled = nextTree.left;
+                            // 后继节点为左子树
+                            if(nextTree.key < nextTree.parent.key) {
+                                nextTree.parent.left = nextTree.right;
+                                deleteChild = leaf;
                             }else{
-                                deleteChiled = nextTree.right;
+                                nextTree.parent.right = nextTree.right;
+                                deleteChild = nextTree.right;
+                            }
+                            if(nextTree.right != null) {
+                                nextTree.right.parent = nextTree.parent;
                             }
                             break;
                         }
@@ -293,6 +299,45 @@ public class RBTree {
         // 删除的节点是黑色节点，修复红黑树
         if(deleteNode != null && BLACK.equals(deleteNode.color)){
             System.out.println("删除的节点颜色是黑色");
+        }
+    }
+
+
+    public void remoVeFix(RBTree child,RBTree parent){
+        RBTree brother = null;
+        while(child == null || (RED.equals(child.color) && child.parent != null)){
+            if(parent.left == child){
+                brother = parent.right;
+                // 兄弟节点是红色
+                if(RED.equals(brother.color)){
+                    brother.color = BLACK;
+                    parent.color = RED;
+                    leftRrotate(parent);
+                    brother = parent.right;
+                }else
+                    // 兄弟节点的子节点都是黑色
+                    if((brother.left == null || BLACK.equals(brother.left))&& (brother.right == null || BLACK.equals(brother.right))){
+                        brother.color = RED;
+                        child = parent;
+                        parent = parent.parent;
+                }else {
+                        // 兄弟节点的左孩子是红色，右孩子是黑色
+                        if (brother.right == null || BLACK.equals(brother.right)) {
+                            brother.left.color = BLACK;
+                            brother.color = RED;
+                            rightRotate(brother);
+                            brother = parent.right;
+                        }
+                        brother.color = parent.color;
+                        parent.color = BLACK;
+                        brother.right.color = BLACK;
+                        leftRrotate(parent);
+
+                }
+            }else{
+
+            }
+
         }
     }
 
