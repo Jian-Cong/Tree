@@ -1,7 +1,5 @@
 package src.rbTree;
 
-import com.sun.org.apache.regexp.internal.RE;
-
 /**
  * 根节点单独定义，旋转的时候判断根节点有没有改变
  *
@@ -95,7 +93,7 @@ public class RBTree {
      * @param tree
      * @return
      */
-    public RBTree leftRrotate(RBTree tree){
+    public RBTree leftRotate(RBTree tree){
         // 找出旋转后的顶点
         RBTree top = tree.right;
         // 断开顶点左孩子
@@ -157,7 +155,6 @@ public class RBTree {
      */
     public void addFix(RBTree tree) {
         RBTree parent,grandP,uncle = null;
-
         while((parent= tree.parent) != null && RED.equals(parent.color)) {
             grandP = parent.parent;
             if (grandP != null) {
@@ -178,7 +175,7 @@ public class RBTree {
                             // 右孩子 叔叔黑色
                             if (tree.key > parent.key) {
                                 RBTree temp = null;
-                                leftRrotate(parent);
+                                leftRotate(parent);
                                 temp = tree;
                                 tree = parent;
                                 parent = temp;
@@ -211,22 +208,22 @@ public class RBTree {
                         }else {
                             parent.color = BLACK;
                             grandP.color = RED;
-                            leftRrotate(grandP);
+                            leftRotate(grandP);
                         }
                     }
                 }
-            }/*else{
-                tree = parent;
-            }*/
+            }
         }
         if(parent == null){
             root = tree;
             root.color = BLACK;
         }
-
     }
 
-
+    /**
+     * 删除节点
+     * @param key
+     */
     public void remove(int key){
         RBTree parent = null;
         RBTree tree = root;
@@ -250,6 +247,7 @@ public class RBTree {
                         parent.right = null;
                     }
                     deleteChild = leaf;
+                    break;
                 }else
                 // 被删除节点tree左子树为空
                 if(tree.left == null){
@@ -261,6 +259,7 @@ public class RBTree {
                     tree.right.parent = parent;
 
                     deleteChild = tree.right;
+                    break;
                 }else
                 // 被删除节点tree右子树为空
                  if (tree.right == null){
@@ -272,23 +271,27 @@ public class RBTree {
                     tree.left.parent = parent;
 
                      deleteChild = tree.left;
+                     break;
                 }else
                     // 左右子树都不为空，找到后继节点并删除
                     {
-                        RBTree nextTree = findNext(tree);
+                        RBTree nextTree = findRepalce(tree);
                         deleteNode = nextTree;
                         if(nextTree != null){
                             tree.key = nextTree.key;
-                            // 后继节点为左子树
-                            if(nextTree.key < nextTree.parent.key) {
-                                nextTree.parent.left = nextTree.right;
-                                deleteChild = leaf;
-                            }else{
-                                nextTree.parent.right = nextTree.right;
-                                deleteChild = nextTree.right;
-                            }
-                            if(nextTree.right != null) {
-                                nextTree.right.parent = nextTree.parent;
+
+                            deleteChild = nextTree.left;
+                            // 替换节点是tree的直接子树
+                            if(nextTree == tree.left){
+                                tree.left = nextTree.left;
+                                if(nextTree.left != null){
+                                    nextTree.left.parent = tree;
+                                }
+                            }else {
+                                nextTree.parent.right = nextTree.left;
+                                if (nextTree.left != null) {
+                                    nextTree.left.parent = nextTree.parent;
+                                }
                             }
                             break;
                         }
@@ -298,47 +301,95 @@ public class RBTree {
 
         // 删除的节点是黑色节点，修复红黑树
         if(deleteNode != null && BLACK.equals(deleteNode.color)){
-            System.out.println("删除的节点颜色是黑色");
+           remoVeFix(deleteChild,tree);
         }
     }
 
-
+    /**
+     * 删除节点修复
+     * @param child
+     * @param parent
+     */
     public void remoVeFix(RBTree child,RBTree parent){
         RBTree brother = null;
-        while(child == null || (RED.equals(child.color) && child.parent != null)){
+        while(child == null || (BLACK.equals(child.color) && child.parent != null)){
             if(parent.left == child){
                 brother = parent.right;
                 // 兄弟节点是红色
                 if(RED.equals(brother.color)){
-                    brother.color = BLACK;
-                    parent.color = RED;
-                    leftRrotate(parent);
-                    brother = parent.right;
-                }else
-                    // 兄弟节点的子节点都是黑色
-                    if((brother.left == null || BLACK.equals(brother.left))&& (brother.right == null || BLACK.equals(brother.right))){
-                        brother.color = RED;
-                        child = parent;
-                        parent = parent.parent;
-                }else {
-                        // 兄弟节点的左孩子是红色，右孩子是黑色
-                        if (brother.right == null || BLACK.equals(brother.right)) {
-                            brother.left.color = BLACK;
-                            brother.color = RED;
-                            rightRotate(brother);
-                            brother = parent.right;
-                        }
-                        brother.color = parent.color;
-                        parent.color = BLACK;
-                        brother.right.color = BLACK;
-                        leftRrotate(parent);
-
+                    brother.color = BLACK;  // 兄弟节点设为黑色
+                    parent.color = RED;     // 父亲节点设为红色
+                    leftRotate(parent);     // 对父亲节点左旋
+                    brother = parent.right;     // 重新设置兄弟节点
                 }
-            }else{
-
+                // 兄弟节点的子节点都是黑色
+                if ((brother.left == null || BLACK.equals(brother.left))
+                        && (brother.right == null || BLACK.equals(brother.right))) {
+                    brother.color = RED;    // 兄弟节点设为红色
+                    child = parent;         // 父亲节点作为新的节点
+                    parent = parent.parent;
+                } else {
+                    // 兄弟节点的左孩子是红色，右孩子是黑色
+                    if (brother.right == null || BLACK.equals(brother.right)) {
+                        brother.left.color = BLACK;     // 兄弟节点左孩子设为黑的
+                        brother.color = RED;            // 兄弟节点设为红色
+                        rightRotate(brother);           // 对兄弟节点右旋
+                        brother = parent.right;         // 重新设置兄弟节点
+                    }
+                    // 兄弟节点的右孩子是黑的
+                    brother.color = parent.color;   // 父亲节点的颜色覆盖兄弟节点
+                    parent.color = BLACK;           // 父亲节点设为黑色
+                    brother.right.color = BLACK;    // 兄弟节点右孩子设为黑色
+                    leftRotate(parent);             // 对父亲节点左旋
+                    child = root;                   // 当期那节点设为根节点，程序结束
+                    break;
+                }
+            }else {
+                brother = parent.left;
+                // 兄弟节点是红色
+                if (RED.equals(brother.color)) {
+                    brother.color = BLACK;  // 兄弟节点设为黑色
+                    parent.color = RED;     // 父亲节点设为红色
+                    rightRotate(parent);    // 对父亲节点右旋
+                    brother = parent.left;  // 重新设置兄弟节点
+                }
+                // 兄弟节点是黑色且左右子节点都是黑色
+                if ((brother.left == null || BLACK.equals(brother.left)) && (brother.right == null || BLACK.equals(brother.right))) {
+                    brother.color = RED;    // 兄弟节点设为红色
+                    child = parent;         // 父亲节点作为新的节点
+                    parent = parent.parent;
+                } else
+                    // 兄弟节点是黑色，且左孩子是红色右孩子是黑色
+                    if ((brother.left != null && RED.equals(brother.left)) && (brother.left == null || BLACK.equals(brother.right))) {
+                        brother.left.color = BLACK;     // 兄弟节点左孩子设为黑色
+                        brother.color = RED;            // 兄弟节点设为红色
+                        leftRotate(brother);            // 对兄弟节点左旋
+                        brother = parent.left;          // 重新设置兄弟节点
+                    }
+                    // 兄弟节点的右孩子红色
+                    brother.color = parent.color;   // 兄弟节点颜色设为父亲节点颜色
+                    parent.color = BLACK;           // 父亲节点颜色设为黑色
+                    brother.right.color = BLACK;    // 兄弟节点右孩子设为黑色
+                    rightRotate(parent);            // 对父亲节点进行右旋
+                    child = root;                   // X设为根节点，程序结束
+                    break;
             }
-
         }
+        if(child != null){
+            child.color = BLACK;
+        }
+    }
+
+    /**
+     * 查找替代节点--前置节点
+     * @param tree
+     */
+    public RBTree findRepalce(RBTree tree){
+        tree = tree.left;
+        while (tree != null && tree.left != null) {
+            tree = tree.right;
+        }
+        return tree;
     }
 
     /**
@@ -378,13 +429,12 @@ public class RBTree {
                 break;
             }
         }
-        System.out.println("\n "+findNext(tree).key);
+        System.out.println("\n "+findRepalce(tree).key);
     }
 
     public static void main(String[] args){
         root = new RBTree(80,null,null);
         root.color = BLACK;
-//        RBTree tree = root;
         root.add(60);
         root.add(120);
         root.add(40);
@@ -398,10 +448,20 @@ public class RBTree {
         root.add(51);
         root.print(root);
 
-        System.out.println("\n 删除节点:");
-        root.remove(40);
+        System.out.println("\n 删除节点80:");
+        root.remove(80);
         root.print(root);
-
-
+        System.out.println("\n 删除节点60:");
+        root.remove(60);
+        root.print(root);
+        System.out.println("\n 删除节点35:");
+        root.remove(35);
+        root.print(root);
+        System.out.println("\n 删除节点70:");
+        root.remove(70);
+        root.print(root);
+        System.out.println("\n 删除节点20:");
+        root.remove(20);
+        root.print(root);
     }
 }
